@@ -16,16 +16,9 @@ terraform {
 provider "azurerm" {
   features {}
 
-  client_id       = secret.client_id
-  client_secret   = secret.secret
-  tenant_id       = secret.tenant_id
-  subscription_id = secret.subscription_id
 }
 
 provider "azapi" {
-
-  client_id       = secret.client_id
-  client_secret   = secret.secret
-  tenant_id       = secret.tenant_id
-  subscription_id = secret.subscription_id
+  features {}
+  
 }
