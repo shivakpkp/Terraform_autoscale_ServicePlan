@@ -38,5 +38,23 @@ jobs:
           "$RUNNER_TEMP/checkov-venv/bin/checkov" \
             --directory "$SCAN_DIRECTORY" \
             --framework terraform \
-            --compact
-            --soft-fail
+            --soft-fail \
+            --output github_failed_only \
+            > "$RUNNER_TEMP/checkov-report.md"
+
+      - name: Publish security summary
+        if: always()
+        shell: bash
+        run: |
+          {
+            echo "## Terraform security findings"
+            echo ""
+            echo "Advisory scan: findings do not block this pipeline."
+            echo ""
+
+            if [ -s "$RUNNER_TEMP/checkov-report.md" ]; then
+              cat "$RUNNER_TEMP/checkov-report.md"
+            else
+              echo "No report was produced. Check the scan logs."
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
