@@ -18,3 +18,8 @@ jobs:
     with:
       working-directory: environment/POC
       terraform-version: "1.5.7"
+
+  security:
+    uses: ./.github/workflows/terraform-security.yml
+    with:
+      scan-directory: .
