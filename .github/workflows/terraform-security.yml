@@ -38,5 +38,5 @@ jobs:
           "$RUNNER_TEMP/checkov-venv/bin/checkov" \
             --directory "$SCAN_DIRECTORY" \
             --framework terraform \
-            --compact
+            --compact \
             --soft-fail
