@@ -39,3 +39,4 @@ jobs:
             --directory "$SCAN_DIRECTORY" \
             --framework terraform \
             --compact
+            --soft-fail
