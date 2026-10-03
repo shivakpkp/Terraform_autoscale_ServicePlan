@@ -1,5 +1,6 @@
 # Terraform configuration for the AzureRM provider version used by this deployment.
 terraform {
+
   required_providers {
     azurerm = {
       source  = "hashicorp/azurerm"
@@ -9,6 +10,9 @@ terraform {
       source  = "azure/azapi"
       version = "~> 2.0" # Ensures you have up-to-date API support
     }
+  }
+  backend "azurerm" {
+    use_azuread_auth = true
   }
 }
 
