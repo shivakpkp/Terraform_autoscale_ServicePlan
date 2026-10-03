@@ -34,6 +34,6 @@ resource "azurerm_automation_webhook" "this" {
   resource_group_name     = var.resource_group_name
   automation_account_name = var.automation_account_name
   runbook_name            = azurerm_automation_runbook.this.name
-  expiry_time = var.webhook_expiry_time
-  enabled     = true
+  expiry_time             = var.webhook_expiry_time
+  enabled                 = true
 }

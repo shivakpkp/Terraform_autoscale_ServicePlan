@@ -33,17 +33,17 @@ resource "azurerm_monitor_action_group" "this" {
   name                = var.action_group_name
   resource_group_name = var.resource_group_name
   short_name          = var.action_group_short_name
-  
+
   dynamic "automation_runbook_receiver" {
     for_each = var.runbook
     content {
-       name                 = automation_runbook_receiver.value.name
-    automation_account_id   = automation_runbook_receiver.value.automation_account_id
-    runbook_name            = automation_runbook_receiver.value.runbook_name
-    webhook_resource_id     = automation_runbook_receiver.value.webhook_resource_id
-    is_global_runbook       = true
-    service_uri             = automation_runbook_receiver.value.service_uri
-    use_common_alert_schema = automation_runbook_receiver.value.schema
+      name                    = automation_runbook_receiver.value.name
+      automation_account_id   = automation_runbook_receiver.value.automation_account_id
+      runbook_name            = automation_runbook_receiver.value.runbook_name
+      webhook_resource_id     = automation_runbook_receiver.value.webhook_resource_id
+      is_global_runbook       = true
+      service_uri             = automation_runbook_receiver.value.service_uri
+      use_common_alert_schema = automation_runbook_receiver.value.schema
 
     }
   }
@@ -56,5 +56,5 @@ resource "azurerm_monitor_action_group" "this" {
     }
   }
 
-tags = var.tags
+  tags = var.tags
 }
