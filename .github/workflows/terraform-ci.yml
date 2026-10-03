@@ -14,7 +14,7 @@ concurrency:
 
 jobs:
   validate:
-    uses: ./.github/workflows/template/terraform-validate.yml
+    uses: ./.github/workflows/terraform-validate.yml
     with:
       working-directory: environment/POC
       terraform-version: "1.5.7"
