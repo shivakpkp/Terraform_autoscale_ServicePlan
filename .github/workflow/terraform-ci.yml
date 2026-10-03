@@ -1,0 +1,20 @@
+name: Terraform CI
+
+on:
+  pull_request:
+    branches:
+      - prod
+
+permissions:
+  contents: read
+
+concurrency:
+  group: terraform-ci-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    uses: ./.github/workflows/template/terraform-validate.yml
+    with:
+      working-directory: environment/POC
+      terraform-version: "1.5.7"
