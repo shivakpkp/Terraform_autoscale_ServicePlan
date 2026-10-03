@@ -15,7 +15,7 @@ module "action_group" {
           "poc-automation-account"
         ].id
 
-        webhook_resource_id = moduSle.automation_account_runbook[
+        webhook_resource_id = module.automation_account_runbook[
           runbook.runbook_name
         ].webhook_id
 
