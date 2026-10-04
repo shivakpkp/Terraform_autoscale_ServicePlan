@@ -1,6 +1,7 @@
 name: Terraform Plan POC
 
 on:
+  workflow_dispatch:
   push:
     branches:
       - prod
