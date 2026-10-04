@@ -47,6 +47,21 @@ jobs:
         with:
           terraform_version: ${{ inputs.terraform-version }}
           terraform_wrapper: false
+    
+      - name: Check Azure authentication variables
+        run: |
+          missing=0
+
+          for name in ARM_CLIENT_ID ARM_CLIENT_SECRET ARM_SUBSCRIPTION_ID ARM_TENANT_ID; do
+            if [ -z "${!name}" ]; then
+              echo "::error::$name is missing or empty"
+              missing=1
+            else
+              echo "$name is set"
+            fi
+          done
+
+          exit "$missing"
 
       - name: Initialize remote state
         env:
