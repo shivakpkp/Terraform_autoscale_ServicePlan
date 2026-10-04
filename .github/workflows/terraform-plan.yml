@@ -1,27 +1,21 @@
-name: Reusable Terraform Plan
+name: Terraform Plan POC
 
 on:
-  workflow_call:
-    inputs:
-      working-directory:
-        required: true
-        type: string
-      terraform-version:
-        required: true
-        type: string
-      environment-name:
-        required: true
-        type: string
+  workflow_dispatch:
 
 permissions:
   contents: read
+
+concurrency:
+  group: terraform-state-poc
+  cancel-in-progress: false
 
 jobs:
   plan:
     name: Terraform plan
     runs-on: ubuntu-24.04
     timeout-minutes: 20
-    environment: ${{ inputs.environment-name }}
+    environment: POC
 
     env:
       TF_IN_AUTOMATION: "true"
@@ -30,7 +24,7 @@ jobs:
     defaults:
       run:
         shell: bash
-        working-directory: ${{ inputs.working-directory }}
+        working-directory: environment/POC
 
     steps:
       - name: Checkout repository
@@ -41,9 +35,9 @@ jobs:
       - name: Install Terraform
         uses: hashicorp/setup-terraform@b9cd54a3c349d3f38e8881555d616ced269862dd # v3.1.2
         with:
-          terraform_version: ${{ inputs.terraform-version }}
+          terraform_version: "1.5.7"
           terraform_wrapper: false
-    
+
       - name: Check Azure authentication variables
         env:
           ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
@@ -54,11 +48,11 @@ jobs:
           missing=0
 
           for name in ARM_CLIENT_ID ARM_CLIENT_SECRET ARM_SUBSCRIPTION_ID ARM_TENANT_ID; do
-            if [ -z "${!name}" ]; then
+            if [ -n "${!name}" ]; then
+              echo "$name is set"
+            else
               echo "::error::$name is missing or empty"
               missing=1
-            else
-              echo "$name is set"
             fi
           done
 
@@ -82,4 +76,9 @@ jobs:
             -backend-config="key=$STATE_KEY"
 
       - name: Terraform plan
+        env:
+          ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
+          ARM_CLIENT_SECRET: ${{ secrets.ARM_CLIENT_SECRET }}
+          ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
+          ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
         run: terraform plan -input=false -no-color -lock-timeout=5m
