@@ -1,8 +1,8 @@
 resource_group_name = "rg-autoscale-terraform"
 location            = "canadacentral"
 automation_account = {
-  ll-poc-automation-account = {
-    name     = "ll-poc-automation-account"
+  poc-automation-account = {
+    name     = "poc-automation-account"
     sku_name = "Basic"
     identity = "SystemAssigned"
   }
