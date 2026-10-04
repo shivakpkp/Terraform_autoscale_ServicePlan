@@ -23,6 +23,5 @@ provider "azurerm" {
 }
 
 provider "azapi" {
-  features {}
 
 }
