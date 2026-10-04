@@ -44,7 +44,7 @@ action_groups = {
     email = [
       {
         name          = "POC Notification"
-        email_address = ""
+        email_address = "admin@company.com"
       }
     ]
   }
