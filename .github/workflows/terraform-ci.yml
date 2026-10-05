@@ -19,6 +19,7 @@ jobs:
     name: Terraform validate
     runs-on: ubuntu-24.04
     steps:
+      - uses: actions/checkout@v4
       - uses: ./.github/actions/terraform-validate/action.yml
         with:
           working-directory: environment/POC
@@ -29,8 +30,6 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
-
-      
-      - uses: ./.github/actions/terraform-secret/actions.yml
+      - uses: ./.github/actions/terraform-secret/action.yml
         with:
           scan-directory: .
