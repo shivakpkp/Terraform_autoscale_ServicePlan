@@ -1,12 +1,14 @@
 name: Terraform CI
 
 on:
+  workflow_dispatch:
   pull_request:
     branches:
       - prod
 
 permissions:
   contents: read
+  id-token: write
 
 concurrency:
   group: terraform-ci-${{ github.event.pull_request.number }}
@@ -14,12 +16,24 @@ concurrency:
 
 jobs:
   validate:
-    uses: ./.github/actions/terraform-validate.yml
-    with:
-      working-directory: environment/POC
-      terraform-version: "1.5.7"
+    name: Terraform validate
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      
+      - uses: ./.github/actions/terraform-validate.yml
+        with:
+          working-directory: environment/POC
+          terraform-version: "1.5.7"
 
   security:
-    uses: ./.github/actions/terraform-security.yml
-    with:
-      scan-directory: .
+    name: Terraform security
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      
+      - uses: ./.github/actions/terraform-security.yml
+        with:
+          scan-directory: .
