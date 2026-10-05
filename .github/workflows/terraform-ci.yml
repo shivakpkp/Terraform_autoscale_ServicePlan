@@ -14,12 +14,12 @@ concurrency:
 
 jobs:
   validate:
-    uses: ./.github/workflows/terraform-validate.yml
+    uses: ./.github/actions/terraform-validate.yml
     with:
       working-directory: environment/POC
       terraform-version: "1.5.7"
 
   security:
-    uses: ./.github/workflows/terraform-security.yml
+    uses: ./.github/actions/terraform-security.yml
     with:
       scan-directory: .
