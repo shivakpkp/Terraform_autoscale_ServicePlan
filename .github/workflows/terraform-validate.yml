@@ -1,0 +1,24 @@
+name: terraform-validate
+description: Validate Terraform configuration
+on:
+    workflow_dispatch:
+    pull_request:
+        paths:
+            - 'environment/**'
+            - '.github/workflows/terraform-validate.yml'
+
+jobs:
+    validate:
+        name: Validate Terraform configuration
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+            - name: Validate Terraform configuration
+              uses: ./.github/actions/terraform-validate
+              with:
+                working-directory: environment/POC
+                terraform-version: "1.5.7"
+
+    
