@@ -1,35 +1,47 @@
-name: Terraform CI
+name: Terraform Validation
+description: Check Terraform formatting and validate configuration
 
 on:
-  workflow_dispatch:
-  pull_request:
-    branches:
-      - prod
+  workflow_call:
+    inputs:
+      working-directory:
+        description: Terraform root directory
+        required: true
+        type: string
 
-permissions:
-  contents: read
-  id-token: write
-
-concurrency:
-  group: terraform-ci-${{ github.event.pull_request.number }}
-  cancel-in-progress: true
+      terraform-version:
+        description: Terraform CLI version
+        required: true
+        type: string
 
 jobs:
   validate:
-    name: Terraform validate
-    runs-on: ubuntu-24.04
-    steps:
-      - uses: actions/checkout@v4
-      - uses: ./.github/actions/terraform-validate/action.yml
-        with:
-          working-directory: environment/POC
-          terraform-version: "1.5.7"
+    runs-on: ubuntu-latest
 
-  security:
-    name: Terraform security
-    runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
-      - uses: ./.github/actions/terraform-secret/action.yml
-        with:
-          scan-directory: .
+    - name: Install Terraform
+      uses: hashicorp/setup-terraform@b9cd54a3c349d3f38e8881555d616ced269862dd # v3.1.2
+      with:
+        terraform_version: ${{ inputs.terraform-version }}
+        terraform_wrapper: false
+
+    - name: Check formatting
+      shell: bash
+      working-directory: ${{ github.workspace }}
+      run: terraform fmt -check -recursive
+
+    - name: Initialize for validation
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      env:
+        TF_IN_AUTOMATION: "true"
+        TF_INPUT: "false"
+      run: terraform init -backend=false -input=false
+
+    - name: Validate configuration
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      env:
+        TF_IN_AUTOMATION: "true"
+        TF_INPUT: "false"
+      run: terraform validate -no-color
