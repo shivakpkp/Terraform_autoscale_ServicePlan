@@ -21,4 +21,16 @@ jobs:
                 working-directory: environment/POC
                 terraform-version: "1.5.7"
 
-    
+    Security:
+        name: Security Scan
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+            - name: Security Scan
+              uses: ./.github/actions/terraform-secret
+              with:
+                working-directory: environment/POC
+                terraform-version: "1.5.7"
+                scan-directory: environment/POC   
