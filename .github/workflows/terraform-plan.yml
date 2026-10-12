@@ -75,6 +75,11 @@ jobs:
 
       - name: Initialize remote state
         env:
+          ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
+          ARM_CLIENT_SECRET: ${{ secrets.ARM_CLIENT_SECRET }}
+          ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
+          ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
+
           STATE_RESOURCE_GROUP: ${{ vars.TF_RESOURCE_GROUP_NAME }}
           STATE_STORAGE_ACCOUNT: ${{ vars.TF_STATE_STORAGE_ACCOUNT }}
           STATE_CONTAINER: ${{ vars.TF_STATE_CONTAINER }}
