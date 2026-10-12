@@ -1,0 +1,36 @@
+name: Reusable Terraform plan workflow
+description: Run Terraform plan in a reusable workflow
+
+inputs:
+  working-directory:
+    description: Terraform root directory
+    required: true
+    type: string
+  terraform-version:
+    description: Terraform CLI version
+    required: true
+    type: string
+
+runs:
+  using: "composite"
+  steps:
+    - name: Checkout repository
+      uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+      with:
+        persist-credentials: false
+
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@dfe3c3f87815947d99a8997f908cb6525fc44e9e # v4.0.1
+      with:
+        terraform_version: ${{ inputs.terraform-version }}
+        terraform_wrapper: false
+    
+    - name: Terraform init
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      run: |
+        terraform init -input=false \
+          -backend-config="resource_group_name=$TF_RESOURCE_GROUP_NAME" \
+          -backend-config="storage_account_name=$TF_STATE_STORAGE_ACCOUNT" \
+          -backend-config="container_name=$TF_STATE_CONTAINER" \
+          -backend-config="key=$TF_STATE_KEY"
