@@ -5,7 +5,7 @@ on:
     pull_request:
         paths:
             - 'environment/**'
-            - '.github/workflows/**'
+            - '.github/**'
 
 concurrency:
     group: terraform-validate-${{ github.ref }}
