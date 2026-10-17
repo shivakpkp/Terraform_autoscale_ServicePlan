@@ -32,7 +32,7 @@ runs:
         mkdir -p "$TF_PLUGIN_CACHE_DIR"
 
     - name: Check terraform Provider
-      uses: actions/cache@v4
+      uses: actions/cache@v6.1.0
       with:
         path: ${{ env.TF_PLUGIN_CACHE_DIR }}
         key: terraform-providers-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('environment/POC/.terraform.lock.hcl') }}
