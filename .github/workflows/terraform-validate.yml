@@ -8,7 +8,7 @@ on:
             - '.github/**'
 env:
   TF_PLUGIN_CACHE_DIR: ${{ github.workspace }}/.terraform-plugin-cache
-  
+
 concurrency:
     group: terraform-validate-${{ github.ref }}
     cancel-in-progress: true
