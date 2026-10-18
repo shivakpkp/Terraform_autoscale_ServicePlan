@@ -17,6 +17,8 @@ jobs:
     name: terraform plan
     runs-on: ubuntu-24.04
     environment: POC
+    outputs:
+      has-changes: ${{ steps.terraform-plan.outputs.has-changes }}
     env:
         ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
         ARM_CLIENT_SECRET: ${{ secrets.ARM_CLIENT_SECRET }}
@@ -35,6 +37,7 @@ jobs:
         run: echo "${GITHUB_WORKSPACE}"
 
       - name: Terraform Plan
+        id: terraform-plan
         uses: ./.github/actions/terraform-plan
         with:
           working-directory: environment/POC
@@ -46,11 +49,7 @@ jobs:
     needs: plan
     environment: POC
     if : >-
-      needs.plan.outputs.has_changes == 'true' &&
-      (
-        github.event_name == 'workflow_dispatch' ||
-        (github.event_name == 'push' && github.ref == 'refs/heads/main')
-      )
+      ${{ needs.plan.outputs.has-changes == 'true' && github.ref == 'refs/heads/prod' }}
     env:
       TF_IN_AUTOMATION: "true"
       TF_INPUT: "false"
