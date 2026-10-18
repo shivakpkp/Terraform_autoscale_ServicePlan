@@ -59,9 +59,7 @@ runs:
         terraform plan -input=false -out=tfplan
 
     - name: archive plan output
-      if: ${{ inputs.output-path != '' }}
-      shell: bash
-      working-directory: ${{ inputs.working-directory }}
-      run: |
-        mkdir -p $(dirname "${{ inputs.output-path }}")
-        mv tfplan "${{ inputs.output-path }}"
+      uses: actions/upload-artifact@v7
+      with:
+        name: tfplan
+        path: ${{ inputs.working-directory }}/tfplan
