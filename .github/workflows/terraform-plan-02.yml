@@ -11,7 +11,7 @@ permissions:
   contents: read  
 env:
   TF_PLUGIN_CACHE_DIR: ${{ github.workspace }}/.terraform-plugin-cache
-  
+
 jobs:
   plan:
     name: terraform plan
@@ -40,5 +40,47 @@ jobs:
           working-directory: environment/POC
           terraform-version: "1.5.7"
           output-path: "out-tfplan"
+  apply:
+    name: Terraform apply
+    runs-on: ubuntu-24.04
+    needs: plan
+    environment: POC
+    if : >-
+      needs.plan.outputs.has_changes == 'true' &&
+      (
+        github.event_name == 'workflow_dispatch' ||
+        (github.event_name == 'push' && github.ref == 'refs/heads/main')
+      )
+    env:
+      TF_IN_AUTOMATION: "true"
+      TF_INPUT: "false"
 
+    steps:
+      - name: Login to Azure
+        uses: azure/login@v2
+        with:
+          creds: |
+            {
+              "clientId": "${{ secrets.ARM_CLIENT_ID }}",
+              "clientSecret": "${{ secrets.ARM_CLIENT_SECRET }}",
+              "subscriptionId": "${{ secrets.ARM_SUBSCRIPTION_ID }}",
+              "tenantId": "${{ secrets.ARM_TENANT_ID }}"
+            }
+
+      - name: Initialize remote state
+        env:
+          ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
+          ARM_CLIENT_SECRET: ${{ secrets.ARM_CLIENT_SECRET }}
+          ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
+          ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
+
+          STATE_RESOURCE_GROUP: ${{ vars.TF_RESOURCE_GROUP_NAME }}
+          STATE_STORAGE_ACCOUNT: ${{ vars.TF_STATE_STORAGE_ACCOUNT }}
+          STATE_CONTAINER: ${{ vars.TF_STATE_CONTAINER }}
+          STATE_KEY: ${{ vars.TF_STATE_KEY }}
+          
+        uses: ./.github/actions/terraform-apply
+        with:
+          working-directory: environment/POC
+          terraform-version: "1.5.7"
      
