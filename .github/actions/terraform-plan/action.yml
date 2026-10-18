@@ -15,7 +15,10 @@ inputs:
     required: true
     type: string
   
-
+outputs:
+  has-changes:
+    description: Indicates whether there are changes in the Terraform plan
+    value: ${{ steps.terraform-plan.outputs.has_changes }}
 runs:
   using: "composite"
   steps:
@@ -29,6 +32,16 @@ runs:
       with:
         terraform_version: ${{ inputs.terraform-version }}
         terraform_wrapper: false
+    - name: create provider cache directory
+      shell: bash
+      run: |
+        mkdir -p "$TF_PLUGIN_CACHE_DIR"
+   
+    - name: Check terraform Provider
+      uses: actions/cache@v6.1.0
+      with:
+        path: ${{ env.TF_PLUGIN_CACHE_DIR }}
+        key: terraform-providers-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('environment/POC/.terraform.lock.hcl') }}
 
     - name: Check Azure authentication variables
       shell: bash
@@ -53,10 +66,24 @@ runs:
           -backend-config="key=$STATE_KEY"
 
     - name: Terraform plan
+      id: terraform-plan
       shell: bash
       working-directory: ${{ inputs.working-directory }}
       run: |
-        terraform plan -input=false -out=tfplan
+          exit_code=0
+          terraform plan -input=false -detailed-exitcode -out=tfplan || exit_code=$?
+          case "$exit_code" in
+            0)
+              echo "has_changes=false" >> "$GITHUB_OUTPUT"
+              ;;
+            2)
+              echo "has_changes=true" >> "$GITHUB_OUTPUT"
+              ;;
+            *)
+              echo "Terraform plan failed."
+              exit "$exit_code"
+              ;;
+          esac
 
     - name: archive plan output
       uses: actions/upload-artifact@v7
