@@ -1,0 +1,37 @@
+name: Terraform Apply
+description: Apply Terraform configuration using a previously generated plan file.
+
+inputs:
+  working-directory:
+    description: Terraform root directory
+    required: true
+    type: string
+  terraform-version:
+    description: Terraform CLI version
+    required: true
+    type: string
+
+runs:
+  using: "composite"
+
+  steps:
+    - name: Checkout repository
+      uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+      with:
+        persist-credentials: false
+
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@dfe3c3f87815947d99a8997f908cb6525fc44e9e # v4.0.1
+      with:
+        terraform_version: ${{ inputs.terraform-version }}
+        terraform_wrapper: false
+
+    - uses: actions/download-artifact@v8
+      with:
+        name: tfplan
+
+    - name: Terraform apply
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      run: |
+        terraform apply -input=false -auto-approve tfplan
