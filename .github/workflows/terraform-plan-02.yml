@@ -1,4 +1,4 @@
-name: Terraform Plan
+name: Terraform Plan 02
 
 on:
   workflow_dispatch:
@@ -15,6 +15,12 @@ jobs:
     name: terraform plan
     runs-on: ubuntu-24.04
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+     
+      - name: type working directory
+        run: echo "${GITHUB_WORKSPACE}"
+        
       - name: Terraform Plan
         uses: ./.github/actions/terraform-plan
         with:
