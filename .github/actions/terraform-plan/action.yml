@@ -10,6 +10,10 @@ inputs:
     description: Terraform CLI version
     required: true
     type: string
+  output-path:
+    description: Path to save the Terraform plan output file
+    required: false
+    default: "tfplan"
   
   
 
@@ -48,3 +52,17 @@ runs:
           -backend-config="storage_account_name=$STATE_STORAGE_ACCOUNT" \
           -backend-config="container_name=$STATE_CONTAINER" \
           -backend-config="key=$STATE_KEY"
+
+    - name: Terraform plan
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      run: |
+        terraform plan -input=false -out=tfplan
+
+    - name: archive plan output
+      if: ${{ inputs.output-path != '' }}
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      run: |
+        mkdir -p $(dirname "${{ inputs.output-path }}")
+        mv tfplan "${{ inputs.output-path }}"
