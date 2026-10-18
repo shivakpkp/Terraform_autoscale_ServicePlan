@@ -9,7 +9,9 @@ on:
 
 permissions:
   contents: read  
-
+env:
+  TF_PLUGIN_CACHE_DIR: ${{ github.workspace }}/.terraform-plugin-cache
+  
 jobs:
   plan:
     name: terraform plan
