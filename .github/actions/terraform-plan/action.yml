@@ -84,6 +84,11 @@ runs:
               exit "$exit_code"
               ;;
           esac
+          
+    - name: Show has Change result
+      shell: bash
+      run: |
+        echo "has_changes=${{ steps.terraform-plan.outputs.has_changes }}"
 
     - name: archive plan output
       uses: actions/upload-artifact@v7
