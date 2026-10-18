@@ -14,13 +14,24 @@ jobs:
   plan:
     name: terraform plan
     runs-on: ubuntu-24.04
+    environment: POC
+    env:
+        ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
+        ARM_CLIENT_SECRET: ${{ secrets.ARM_CLIENT_SECRET }}
+        ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
+        ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
+
+        STATE_RESOURCE_GROUP_NAME: ${{ vars.TF_RESOURCE_GROUP_NAME }}
+        STATE_STORAGE_ACCOUNT: ${{ vars.TF_STATE_STORAGE_ACCOUNT }}
+        STATE_CONTAINER: ${{ vars.TF_STATE_CONTAINER }}
+        STATE_KEY: ${{ vars.TF_STATE_KEY }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
      
       - name: type working directory
         run: echo "${GITHUB_WORKSPACE}"
-        
+
       - name: Terraform Plan
         uses: ./.github/actions/terraform-plan
         with:
