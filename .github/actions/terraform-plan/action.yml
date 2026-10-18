@@ -29,7 +29,17 @@ runs:
       with:
         terraform_version: ${{ inputs.terraform-version }}
         terraform_wrapper: false
-
+    - name: create provider cache directory
+       shell: bash
+       run: |
+         mkdir -p "$TF_PLUGIN_CACHE_DIR"
+ 
+     - name: Check terraform Provider
+       uses: actions/cache@v6.1.0
+       with:
+         path: ${{ env.TF_PLUGIN_CACHE_DIR }}
+         key: terraform-providers-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('environment/POC/.terraform.lock.hcl') }}
+  
     - name: Check Azure authentication variables
       shell: bash
       working-directory: ${{ inputs.working-directory }}
