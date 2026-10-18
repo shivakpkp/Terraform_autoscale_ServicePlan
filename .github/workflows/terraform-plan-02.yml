@@ -37,3 +37,4 @@ jobs:
         with:
           working-directory: environment/POC
           terraform-version: "1.5.7"
+          output-path: "tfplan"
