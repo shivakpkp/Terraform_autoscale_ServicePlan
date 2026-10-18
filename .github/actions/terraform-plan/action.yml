@@ -12,9 +12,8 @@ inputs:
     type: string
   output-path:
     description: Path to save the Terraform plan output file
-    required: false
-    default: "tfplan"
-  
+    required: true
+    type: string
   
 
 runs:
