@@ -1,0 +1,22 @@
+name: Terraform Plan
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'environment/**'
+      - '.github/*'
+
+permissions:
+  contents: read  
+
+jobs:
+  plan:
+    name: terraform plan
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Terraform Plan
+        uses: ./.github/actions/terraform-plan
+        with:
+          working-directory: environment/POC
+          terraform-version: "1.5.7"
