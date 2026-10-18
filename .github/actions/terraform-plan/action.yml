@@ -10,6 +10,8 @@ inputs:
     description: Terraform CLI version
     required: true
     type: string
+  
+  
 
 runs:
   using: "composite"
@@ -29,7 +31,7 @@ runs:
       shell: bash
       working-directory: ${{ inputs.working-directory }}
       run: |
-        for name in STATE_RESOURCE_GROUP STATE_STORAGE_ACCOUNT STATE_CONTAINER STATE_KEY; do
+        for name in STATE_RESOURCE_GROUP_NAME STATE_STORAGE_ACCOUNT STATE_CONTAINER STATE_KEY; do
           if [ -z "${!name}" ]; then
             echo "::error::$name is missing or empty inside the composite action"
             exit 1
