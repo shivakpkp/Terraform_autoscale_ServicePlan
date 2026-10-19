@@ -59,6 +59,16 @@ runs:
           -backend-config="storage_account_name=$STATE_STORAGE_ACCOUNT" \
           -backend-config="container_name=$STATE_CONTAINER" \
           -backend-config="key=$STATE_KEY"
+          
+    - name: Check Terraform workspace and managed resources
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      run: |
+        echo "Current workspace:"
+        terraform workspace show
+
+        echo "Resources tracked in state:"
+        terraform state list
 
     - name: Terraform plan
       id: terraform-plan
