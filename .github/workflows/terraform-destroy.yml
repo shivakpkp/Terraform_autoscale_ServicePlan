@@ -23,6 +23,9 @@ jobs:
             STATE_CONTAINER: ${{ vars.TF_STATE_CONTAINER }}
             STATE_KEY: ${{ vars.TF_STATE_KEY }}
         steps:
+            - name: Checkout repository
+              uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+              
             - name: Terraform Destroy
               uses: ./.github/actions/terraform-destroy
               with:
