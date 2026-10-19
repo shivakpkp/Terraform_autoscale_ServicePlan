@@ -3,16 +3,10 @@ description: Destroy Terraform configuration using a previously generated plan f
 
 on:
     workflow_dispatch:
-        inputs:
-        working-directory:
-            description: Terraform root directory
-            required: true
-            default: environment/POC
-        terraform-version:
-            description: Terraform CLI version
-            required: true
-            default: "1.5.7"
 
+env: 
+    working-directory: "environment/POC"
+    terraform-version: "1.5.7"
 jobs:
     destroy-plan:
         name: terraform destroy
@@ -32,8 +26,8 @@ jobs:
             - name: Terraform Destroy
               uses: ./.github/actions/terraform-destroy
               with:
-                working-directory: ${{ github.event.inputs.working-directory }}
-                terraform-version: ${{ github.event.inputs.terraform-version }}
+                working-directory: ${{ vars.working-directory }}
+                terraform-version: ${{ vars.terraform-version }}
 
     destroy-apply:
         name: terraform destroy apply
@@ -52,6 +46,6 @@ jobs:
             - name: Terraform Destroy Apply
               uses: ./.github/actions/terraform-apply
               with:
-                working-directory: ${{ github.event.inputs.working-directory }}
-                terraform-version: ${{ github.event.inputs.terraform-version }}
+                working-directory: ${{ vars.working-directory }}
+                terraform-version: ${{ vars.terraform-version }}
                 plan-artifact-name: tfplan-destroy
