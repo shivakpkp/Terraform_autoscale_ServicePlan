@@ -10,6 +10,10 @@ inputs:
     description: Terraform CLI version
     required: true
     type: string
+  plan-artifact-name:
+    description: Name of the Terraform plan artifact to download and apply
+    required: true
+    type: string
 
 runs:
   using: "composite"
@@ -38,7 +42,7 @@ runs:
 
     - uses: actions/download-artifact@v8
       with:
-        name: tfplan
+        name: ${{ inputs.plan-artifact-name }}
         path: ${{inputs.working-directory}}
 
     - name: Terraform init
@@ -55,4 +59,4 @@ runs:
       shell: bash
       working-directory: ${{ inputs.working-directory }}
       run: |
-        terraform apply -input=false -auto-approve tfplan
+        terraform apply -input=false -auto-approve ${{ inputs.plan-artifact-name }}
