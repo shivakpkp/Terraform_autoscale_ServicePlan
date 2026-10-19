@@ -46,8 +46,30 @@ jobs:
         steps:
             - name: Checkout repository
               uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+              
+            - name: Login to Azure
+              uses: azure/login@v2
+              with:
+                creds: |
+                    {
+                    "clientId": "${{ secrets.ARM_CLIENT_ID }}",
+                    "clientSecret": "${{ secrets.ARM_CLIENT_SECRET }}",
+                    "subscriptionId": "${{ secrets.ARM_SUBSCRIPTION_ID }}",
+                    "tenantId": "${{ secrets.ARM_TENANT_ID }}"
+                    }
+
 
             - name: Terraform Destroy Apply
+              env:
+                ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
+                ARM_CLIENT_SECRET: ${{ secrets.ARM_CLIENT_SECRET }}
+                ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
+                ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
+
+                STATE_RESOURCE_GROUP: ${{ vars.TF_RESOURCE_GROUP_NAME }}
+                STATE_STORAGE_ACCOUNT: ${{ vars.TF_STATE_STORAGE_ACCOUNT }}
+                STATE_CONTAINER: ${{ vars.TF_STATE_CONTAINER }}
+                STATE_KEY: ${{ vars.TF_STATE_KEY }}
               uses: ./.github/actions/terraform-apply
               with:
                 working-directory: "environment/POC"
