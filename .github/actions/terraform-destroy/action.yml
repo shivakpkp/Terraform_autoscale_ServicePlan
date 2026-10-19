@@ -55,11 +55,11 @@ runs:
       working-directory: ${{ inputs.working-directory }}
       run: |
         terraform init -input=false \
-          -backend-config="resource_group_name=$RESOURCE_GROUP_NAME" \
+          -backend-config="resource_group_name=$STATE_RESOURCE_GROUP_NAME" \
           -backend-config="storage_account_name=$STATE_STORAGE_ACCOUNT" \
           -backend-config="container_name=$STATE_CONTAINER" \
           -backend-config="key=$STATE_KEY"
-          
+
     - name: Check Terraform workspace and managed resources
       shell: bash
       working-directory: ${{ inputs.working-directory }}
