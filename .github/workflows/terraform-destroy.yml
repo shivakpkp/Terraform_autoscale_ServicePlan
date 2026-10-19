@@ -30,8 +30,8 @@ jobs:
             - name: Terraform Destroy
               uses: ./.github/actions/terraform-destroy
               with:
-                working-directory: "environment/POC"
-                terraform-version: "1.5.7"
+                working-directory: ${working-directory}
+                terraform-version: ${terraform-version}
 
     destroy-apply:
         name: terraform destroy apply
@@ -50,6 +50,6 @@ jobs:
             - name: Terraform Destroy Apply
               uses: ./.github/actions/terraform-apply
               with:
-                working-directory: "environment/POC"
-                terraform-version: "1.5.7"
+                working-directory: ${working-directory}
+                terraform-version: ${terraform-version}
                 plan-artifact-name: tfplan-destroy
