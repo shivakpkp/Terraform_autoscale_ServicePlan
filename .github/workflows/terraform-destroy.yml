@@ -1,0 +1,57 @@
+name: Terraform Destroy
+description: Destroy Terraform configuration using a previously generated plan file.
+
+on:
+    workflow_dispatch:
+        inputs:
+        working-directory:
+            description: Terraform root directory
+            required: true
+            default: environment/POC
+        terraform-version:
+            description: Terraform CLI version
+            required: true
+            default: "1.5.7"
+
+jobs:
+    destroy-plan:
+        name: terraform destroy
+        runs-on: ubuntu-24.04
+        environment: POC
+        env:
+            ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
+            ARM_CLIENT_SECRET: ${{ secrets.ARM_CLIENT_SECRET }}
+            ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
+            ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
+
+            STATE_RESOURCE_GROUP_NAME: ${{ vars.TF_RESOURCE_GROUP_NAME }}
+            STATE_STORAGE_ACCOUNT: ${{ vars.TF_STATE_STORAGE_ACCOUNT }}
+            STATE_CONTAINER: ${{ vars.TF_STATE_CONTAINER }}
+            STATE_KEY: ${{ vars.TF_STATE_KEY }}
+        steps:
+            - name: Terraform Destroy
+              uses: ./.github/actions/terraform-destroy
+              with:
+                working-directory: ${{ github.event.inputs.working-directory }}
+                terraform-version: ${{ github.event.inputs.terraform-version }}
+
+    destroy-apply:
+        name: terraform destroy apply
+        runs-on: ubuntu-24.04
+        needs: destroy-plan
+        environment: POC
+        if : >-
+          ${{ github.ref == 'refs/heads/prod' }}
+        env:
+            TF_IN_AUTOMATION: "true"
+            TF_INPUT: "false"
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+
+            - name: Terraform Destroy Apply
+              uses: ./.github/actions/terraform-apply
+              with:
+                working-directory: ${{ github.event.inputs.working-directory }}
+                terraform-version: ${{ github.event.inputs.terraform-version }}
+                plan-artifact-name: tfplan-destroy
