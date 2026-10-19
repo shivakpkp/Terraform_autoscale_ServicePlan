@@ -60,16 +60,34 @@ runs:
           -backend-config="container_name=$STATE_CONTAINER" \
           -backend-config="key=$STATE_KEY"
 
-    - name: Check Terraform workspace and managed resources
+    - name: Diagnose Terraform backend
       shell: bash
       working-directory: ${{ inputs.working-directory }}
       run: |
+        echo "Current directory:"
+        pwd
+   
+        echo "Initialized backend:"
+        if [ -f .terraform/terraform.tfstate ]; then
+          jq '.backend | {
+            type,
+            config: (.config | {
+              resource_group_name,
+              storage_account_name,
+              container_name,
+              key
+            })
+          }' .terraform/terraform.tfstate
+        else
+          echo "No backend metadata found in this directory."
+        fi
+   
         echo "Current workspace:"
         terraform workspace show
-
-        echo "Resources tracked in state:"
+   
+        echo "Tracked resources:"
         terraform state list
-
+   
     - name: Terraform plan
       id: terraform-plan
       shell: bash
