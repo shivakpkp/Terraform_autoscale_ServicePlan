@@ -35,11 +35,11 @@ jobs:
 
       - name: Terraform Plan
         id: terraform-plan
-        uses: shivakpkp/github-actions/terraform-actions/terraform-plan@v1.0.1
+        uses: shivakpkp/github-actions/terraform-plan@v1.0.1
         with:
           working-directory: environment/POC
           terraform-version: "1.5.7"
-          
+
   apply:
     name: Terraform apply
     runs-on: ubuntu-24.04
