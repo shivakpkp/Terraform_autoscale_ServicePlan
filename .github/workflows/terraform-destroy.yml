@@ -12,6 +12,8 @@ jobs:
     destroy-plan:
         name: terraform destroy
         runs-on: ubuntu-24.04
+        outputs:
+            artifact-name: ${{ steps.terraform-destroy.outputs.artifact-name }}
         environment: POC
         env:
             ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
@@ -28,6 +30,7 @@ jobs:
               uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
 
             - name: Terraform Destroy
+              id: terraform-destroy
               uses: shivakpkp/terraform-actions/terraform-destroy@v1.0.2
               with:
                 working_directory: "environment/POC"
@@ -70,8 +73,8 @@ jobs:
                 STATE_STORAGE_ACCOUNT: ${{ vars.TF_STATE_STORAGE_ACCOUNT }}
                 STATE_CONTAINER: ${{ vars.TF_STATE_CONTAINER }}
                 STATE_KEY: ${{ vars.TF_STATE_KEY }}
-              uses: ./.github/actions/terraform-apply
+              uses: shivakpkp/terraform-actions/terraform-apply@v1.0.3
               with:
-                working-directory: "environment/POC"
-                terraform-version: "1.5.7"
-                plan-artifact-name: tfplan-destroy
+                working_directory: "environment/POC"
+                terraform_version: "1.5.7"
+                plan-artifact-name: ${{ needs.destroy-plan.outputs.artifact-name }}
