@@ -30,8 +30,8 @@ jobs:
             - name: Terraform Destroy
               uses: shivakpkp/terraform-actions/terraform-destroy@v1.0.2
               with:
-                working-directory: "environment/POC"
-                terraform-version: "1.5.7"
+                working_directory: "environment/POC"
+                terraform_version: "1.5.7"
 
     destroy-apply:
         name: terraform destroy apply
