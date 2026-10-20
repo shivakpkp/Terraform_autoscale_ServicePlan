@@ -76,7 +76,7 @@ jobs:
           ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
           ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
 
-          STATE_RESOURCE_GROUP: ${{ vars.TF_STATE_RESOURCE_GROUP_NAME }}
+          STATE_RESOURCE_GROUP_NAME: ${{ vars.TF_STATE_RESOURCE_GROUP_NAME }}
           STATE_STORAGE_ACCOUNT: ${{ vars.TF_STATE_STORAGE_ACCOUNT }}
           STATE_CONTAINER: ${{ vars.TF_STATE_CONTAINER }}
           STATE_KEY: ${{ vars.TF_STATE_KEY }}
