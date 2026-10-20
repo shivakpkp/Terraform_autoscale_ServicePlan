@@ -1,4 +1,4 @@
-name: Terraform Plan 02
+name: Terraform Plan
 
 on:
   workflow_dispatch:
@@ -35,11 +35,11 @@ jobs:
 
       - name: Terraform Plan
         id: terraform-plan
-        uses: ./.github/actions/terraform-plan
+        uses: shivakpkp/github-actions/terraform-actions/terraform-plan@v1.0.1
         with:
           working-directory: environment/POC
           terraform-version: "1.5.7"
-          output-path: "out-tfplan"
+          
   apply:
     name: Terraform apply
     runs-on: ubuntu-24.04
