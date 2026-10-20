@@ -35,7 +35,18 @@ jobs:
               with:
                 working_directory: "environment/POC"
                 terraform_version: "1.5.7"
+    show-destroy-plan-artifact-name:
+        name: show destroy plan artifact name
+        runs-on: ubuntu-24.04
+        needs: destroy-plan
+        environment: POC
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
 
+            - name: show destroy plan artifact name
+              run: |
+                echo "Destroy plan artifact name: ${{ needs.destroy-plan.outputs.artifact-name }}"
     destroy-apply:
         name: terraform destroy apply
         runs-on: ubuntu-24.04
@@ -81,4 +92,4 @@ jobs:
               with:
                 working_directory: "environment/POC"
                 terraform_version: "1.5.7"
-                plan_artifact_name: ${{ env.artifact-name }}
+                plan_artifact_name: "tfplan-destroy"
