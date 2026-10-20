@@ -37,8 +37,8 @@ jobs:
         id: terraform-plan
         uses: shivakpkp/terraform-actions/terraform-plan@v1.0.1
         with:
-          working-directory: environment/POC
-          terraform-version: "1.5.7"
+          working_directory: environment/POC
+          terraform_version: "1.5.7"
 
   apply:
     name: Terraform apply
