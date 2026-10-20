@@ -28,7 +28,7 @@ jobs:
               uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
 
             - name: Terraform Destroy
-              uses: ./.github/actions/terraform-destroy
+              uses: shivakpkp/terraform-actions/terraform-destroy@v1.0.2
               with:
                 working-directory: "environment/POC"
                 terraform-version: "1.5.7"
@@ -46,7 +46,7 @@ jobs:
         steps:
             - name: Checkout repository
               uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
-              
+
             - name: Login to Azure
               uses: azure/login@v2
               with:
