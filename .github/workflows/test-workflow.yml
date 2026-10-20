@@ -1,0 +1,33 @@
+name: test workflow
+
+on:
+  workflow_dispatch
+
+env:
+    TF_IN_AUTOMATION: "true"
+    TF_INPUT: "false"
+
+    ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
+    ARM_CLIENT_SECRET: ${{ secrets.ARM_CLIENT_SECRET }}
+    ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
+    ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
+
+    STATE_RESOURCE_GROUP_NAME: ${{ vars.STATE_RESOURCE_GROUP_NAME }}
+    STATE_STORAGE_ACCOUNT: ${{ vars.STATE_STORAGE_ACCOUNT }}
+    STATE_CONTAINER: ${{ vars.STATE_CONTAINER }}
+    STATE_KEY: ${{ vars.STATE_KEY }}
+
+jobs:
+  test:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Run Terraform security scan
+        uses: shivakpkp/terraform-actions/terraform-init-cache-setup@v1.0.0
+        with:
+          working-directory: "environment/POC"
+          terraform-version: "1.5.7"
+
+          
