@@ -19,6 +19,7 @@ jobs:
     environment: POC
     outputs:
       has-changes: ${{ steps.terraform-plan.outputs.has-changes }}
+      artifact-name: ${{ steps.terraform-plan.outputs.artifact-name }}
     env:
         ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
         ARM_CLIENT_SECRET: ${{ secrets.ARM_CLIENT_SECRET }}
@@ -35,7 +36,7 @@ jobs:
 
       - name: Terraform Plan
         id: terraform-plan
-        uses: shivakpkp/terraform-actions/terraform-plan@v1.0.1
+        uses: shivakpkp/terraform-actions/terraform-plan@v1.0.4
         with:
           working_directory: environment/POC
           terraform_version: "1.5.7"
@@ -78,8 +79,9 @@ jobs:
           STATE_CONTAINER: ${{ vars.TF_STATE_CONTAINER }}
           STATE_KEY: ${{ vars.TF_STATE_KEY }}
           
-        uses: ./.github/actions/terraform-apply
+        uses: shivakpkp/terraform-actions/terraform-apply@v1.0.4
         with:
           working-directory: environment/POC
           terraform-version: "1.5.7"
+          plan_artifact_name: ${{ needs.plan.outputs.artifact-name }}
      
