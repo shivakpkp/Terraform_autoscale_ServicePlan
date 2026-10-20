@@ -31,7 +31,7 @@ jobs:
 
             - name: Terraform Destroy
               id: terraform-destroy
-              uses: shivakpkp/terraform-actions/terraform-destroy@v1.0.4
+              uses: shivakpkp/terraform-actions/terraform-destroy@v1.0.5
               with:
                 working_directory: "environment/POC"
                 terraform_version: "1.5.7"
@@ -88,7 +88,7 @@ jobs:
                 STATE_STORAGE_ACCOUNT: ${{ vars.TF_STATE_STORAGE_ACCOUNT }}
                 STATE_CONTAINER: ${{ vars.TF_STATE_CONTAINER }}
                 STATE_KEY: ${{ vars.TF_STATE_KEY }}
-              uses: shivakpkp/terraform-actions/terraform-apply@v1.0.4
+              uses: shivakpkp/terraform-actions/terraform-apply@v1.0.5
               with:
                 working_directory: "environment/POC"
                 terraform_version: "1.5.7"
