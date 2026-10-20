@@ -19,6 +19,7 @@ env:
 
 jobs:
   test:
+    environment: POC
     runs-on: ubuntu-24.04
     steps:
       - name: Checkout repository
@@ -27,7 +28,8 @@ jobs:
       - name: Run Terraform security scan
         uses: shivakpkp/terraform-actions/terraform-init-cache-setup@v1.0.0
         with:
-          working-directory: "environment/POC"
-          terraform-version: "1.5.7"
+          working_directory: "environment/POC"
+          terraform_version: "1.5.7"
+          
 
           
