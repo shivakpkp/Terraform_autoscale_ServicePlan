@@ -67,6 +67,7 @@ jobs:
 
             - name: Terraform Destroy Apply
               env:
+                artifact-name: ${{ needs.destroy-plan.outputs.artifact-name }}
                 ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
                 ARM_CLIENT_SECRET: ${{ secrets.ARM_CLIENT_SECRET }}
                 ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
@@ -80,4 +81,4 @@ jobs:
               with:
                 working_directory: "environment/POC"
                 terraform_version: "1.5.7"
-                plan_artifact_name: "tfplan-destroy"
+                plan_artifact_name: $artifact-name
