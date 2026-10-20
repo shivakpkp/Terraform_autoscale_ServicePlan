@@ -13,7 +13,8 @@ jobs:
         name: terraform destroy
         runs-on: ubuntu-24.04
         outputs:
-            artifact-name: ${{ steps.terraform-destroy.outputs.artifact-name }}
+            has_changes: ${{ steps.terraform-destroy.outputs.has_changes }}
+            archive_name: ${{ steps.terraform-destroy.outputs.archive_name }}
         environment: POC
         env:
             ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
@@ -31,7 +32,7 @@ jobs:
 
             - name: Terraform Destroy
               id: terraform-destroy
-              uses: shivakpkp/terraform-actions/terraform-destroy@v1.0.4
+              uses: shivakpkp/terraform-actions/terraform-destroy@v1.0.6
               with:
                 working_directory: "environment/POC"
                 terraform_version: "1.5.7"
@@ -46,14 +47,14 @@ jobs:
 
             - name: show destroy plan artifact name
               run: |
-                echo "Destroy plan artifact name: ${{ needs.destroy-plan.outputs.artifact-name }}"
+                echo "Destroy plan artifact name: ${{ needs.destroy-plan.outputs.archive_name }}"
     destroy-apply:
         name: terraform destroy apply
         runs-on: ubuntu-24.04
         needs: destroy-plan
         environment: POC
         if : >-
-          ${{ github.ref == 'refs/heads/prod' }}
+            ${{ needs.destroy-plan.outputs.has_changes == 'true' && github.ref == 'refs/heads/prod' }}
         env:
             TF_IN_AUTOMATION: "true"
             TF_INPUT: "false"
@@ -74,7 +75,7 @@ jobs:
 
             - name: show destroy plan artifact name
               run: |
-                echo "Destroy plan artifact name: ${{ needs.destroy-plan.outputs.artifact-name }}"
+                echo "Destroy plan artifact name: ${{ needs.destroy-plan.outputs.archive_name }}"
 
             - name: Terraform Destroy Apply
               env:
