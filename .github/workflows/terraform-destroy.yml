@@ -77,4 +77,4 @@ jobs:
               with:
                 working_directory: "environment/POC"
                 terraform_version: "1.5.7"
-                plan_artifact_name: ${{ needs.destroy-plan.outputs.archive_name }}"
+                plan_artifact_name: ${{ needs.destroy-plan.outputs.archive_name }}
