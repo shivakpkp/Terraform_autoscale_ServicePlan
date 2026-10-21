@@ -9,6 +9,8 @@ on:
       - 'modules/**'
       - 'Scripts/**'
   pull_request:
+    branches:
+      - prod
     paths:
       - 'environment/**'
       - '.github/**'

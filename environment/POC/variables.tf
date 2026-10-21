@@ -134,3 +134,8 @@ variable "tags" {
   type        = map(string)
 }
 
+variable "subscription_id" {
+  description = "subscription id"
+  type        = string
+}
+
