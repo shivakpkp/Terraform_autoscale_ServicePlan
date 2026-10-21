@@ -26,6 +26,8 @@ jobs:
             STATE_STORAGE_ACCOUNT: ${{ vars.TF_STATE_STORAGE_ACCOUNT }}
             STATE_CONTAINER: ${{ vars.TF_STATE_CONTAINER }}
             STATE_KEY: ${{ vars.TF_STATE_KEY }}
+
+            TF_VAR_subscription_id: ${{ secrets.ARM_SUBSCRIPTION_ID }}
         steps:
             - name: Checkout repository
               uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
@@ -73,6 +75,8 @@ jobs:
                 STATE_STORAGE_ACCOUNT: ${{ vars.TF_STATE_STORAGE_ACCOUNT }}
                 STATE_CONTAINER: ${{ vars.TF_STATE_CONTAINER }}
                 STATE_KEY: ${{ vars.TF_STATE_KEY }}
+
+                TF_VAR_subscription_id: ${{ secrets.ARM_SUBSCRIPTION_ID }}
               uses: shivakpkp/terraform-actions/terraform-apply@v1.0.5
               with:
                 working_directory: "environment/POC"
