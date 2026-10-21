@@ -1,11 +1,19 @@
-name: Terraform Plan
+name: Terraform Plan and apply
 
 on:
   workflow_dispatch:
   push:
     paths:
       - 'environment/**'
-      - '.github/*'
+      - '.github/**'
+      - 'modules/**'
+      - 'Scripts/**'
+  pull_request:
+    paths:
+      - 'environment/**'
+      - '.github/**'
+      - 'modules/**'
+      - 'Scripts/**'
 
 permissions:
   contents: read  
