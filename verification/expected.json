@@ -1,0 +1,19 @@
+{
+  "resource_group": "rg-autoscale-terraform",
+  "automation_account": "poc-automation-account",
+  "runbooks": ["rb-scale-up", "rb-scale-down", "shared-engine"],
+  "plans": {
+    "ASP-rgautoscale-abf9": "rg-autoscale",
+    "rtyui": "rg-autoscale"
+  },
+  "routes": {
+    "scale-up": "rb-scale-up",
+    "scale-down": "rb-scale-down"
+  },
+  "alerts": [
+    {"suffix": "Cpu_alert_scaleup", "metric": "CpuPercentage", "operator": "GreaterThan", "threshold": 40, "group": "scale-up"},
+    {"suffix": "Memory_alert_scaleup", "metric": "MemoryPercentage", "operator": "GreaterThan", "threshold": 40, "group": "scale-up"},
+    {"suffix": "Cpu_alert_scaledown", "metric": "CpuPercentage", "operator": "LessThan", "threshold": 20, "group": "scale-down"},
+    {"suffix": "Memory_alert_scaledown", "metric": "MemoryPercentage", "operator": "LessThan", "threshold": 20, "group": "scale-down"}
+  ]
+}
