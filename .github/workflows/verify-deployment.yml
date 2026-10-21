@@ -1,6 +1,10 @@
 name: Verify Azure deployment
 
 on:
+  workflow_run:
+    workflows: ["Terraform Plan and apply"]
+    types:
+      - completed
   workflow_dispatch:
 
 permissions:
