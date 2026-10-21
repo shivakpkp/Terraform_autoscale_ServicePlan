@@ -1,184 +1,114 @@
-
-# ==============================================================================
-# Runbook: scale-up.ps1
-# ==============================================================================
-# Purpose:
-#   1. Receive Azure Monitor Alert webhook
-#   2. Extract the exact alertTargetIDs value
-#   3. Pass the TargetResourceId to the shared scaling engine
-#   4. Shared engine scales ONLY that resource
-#
-# Flow:
-#   Azure Monitor Alert
-#        |
-#        v
-#   Scale-Up Master
-#        |
-#        | TargetResourceId
-#        v
-#   Shared Engine
-# ==============================================================================
-
+# Receives an Azure Monitor common-schema alert and waits for the shared engine.
 param (
-    [Parameter(Mandatory = $false)]
-    [object] $WebhookData
+    [object] $WebhookData,
+    [string] $AutomationResourceGroup = 'rg-autoscale-terraform',
+    [string] $AutomationAccountName = 'poc-automation-account',
+    [string] $SharedEngineRunbookName = 'shared-engine',
+    # Leave empty when the Automation Account and target are in one subscription.
+    [string] $AutomationSubscriptionId = '',
+    [ValidateRange(1800, 7200)]
+    [int] $JobTimeoutSeconds = 2400
 )
-$Default_Runbook_Dry_Run = $false
+
 $ErrorActionPreference = 'Stop'
+$mode = 'scaleup'
+$targetSku = 'P1v3'
 
-# ------------------------------------------------------------------------------
-# Configuration
-# ------------------------------------------------------------------------------
-
-$RESOURCE_GROUP = 'rg-autoscale-terraform'
-
-$SHARED_ENGINE_RUNBOOK = 'shared-engine'
-
-$MASTER_RUNBOOK_NAME = 'scaleupmaster'
-
-# ------------------------------------------------------------------------------
-# Start
-# ------------------------------------------------------------------------------
-
-Write-Output "============================================================"
-Write-Output "Scale-Up Master Runbook"
-Write-Output "============================================================"
-
-Write-Output "Started: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')"
-
-# ------------------------------------------------------------------------------
-# Validate Webhook
-# ------------------------------------------------------------------------------
-
-if (-not $WebhookData) {
-    throw "WebhookData was not received."
+if ($WebhookData -is [string]) {
+    $WebhookData = $WebhookData | ConvertFrom-Json
 }
-
-Write-Output "Webhook data received."
-
-# ------------------------------------------------------------------------------
-# Parse Alert Payload
-# ------------------------------------------------------------------------------
-
-try {
-    $AlertData = $WebhookData.RequestBody | ConvertFrom-Json
+if ($null -eq $WebhookData -or [string]::IsNullOrWhiteSpace([string]$WebhookData.RequestBody)) {
+    throw 'WebhookData.RequestBody is required.'
 }
-catch {
-    throw "Failed to parse Azure Monitor alert payload: $($_.Exception.Message)"
+$alert = $WebhookData.RequestBody | ConvertFrom-Json
+if ($alert.schemaId -ne 'azureMonitorCommonAlertSchema') {
+    throw 'Expected the Azure Monitor common alert schema.'
 }
-
-Write-Output "Alert payload parsed successfully."
-
-# ------------------------------------------------------------------------------
-# Get Alert Target Resource ID
-# ------------------------------------------------------------------------------
-
-$TargetResourceIds = @(
-    $AlertData.data.essentials.alertTargetIDs
-)
-
-if ($TargetResourceIds.Count -eq 0) {
-    throw "No alertTargetIDs were found in the alert payload."
+$essentials = $alert.data.essentials
+if ($essentials.monitorCondition -eq 'Resolved') {
+    [ordered]@{ Succeeded = $true; Result = 'Ignored'; Message = 'Resolved alert ignored.' } | ConvertTo-Json -Compress
+    return
 }
-
-# ------------------------------------------------------------------------------
-# POC: Use the exact Target Resource ID from the alert
-# ------------------------------------------------------------------------------
-
-$TargetResourceId = [string]$TargetResourceIds[0]
-
-if ([string]::IsNullOrWhiteSpace($TargetResourceId)) {
-    throw "TargetResourceId is empty."
+if ($essentials.monitorCondition -ne 'Fired') {
+    throw 'Only Fired or Resolved monitorCondition values are accepted.'
 }
-
-Write-Output ""
-Write-Output "============================================================"
-Write-Output "ALERT TARGET"
-Write-Output "============================================================"
-
-Write-Output "TargetResourceId:"
-Write-Output $TargetResourceId
-
-# ------------------------------------------------------------------------------
-# Basic validation
-# ------------------------------------------------------------------------------
-
-if ($TargetResourceId -notmatch '^/subscriptions/.+/resourceGroups/.+/providers/.+') {
-    throw "The alert TargetResourceId does not look like a valid Azure resource ID: $TargetResourceId"
+if ($essentials.signalType -ne 'Metric') {
+    throw 'Only metric alerts are accepted.'
 }
-
-# ------------------------------------------------------------------------------
-# Authenticate
-# ------------------------------------------------------------------------------
-
-Write-Output ""
-Write-Output "Authenticating using Managed Identity..."
-
-Connect-AzAccount -Identity | Out-Null
-
-$subscriptionId = (Get-AzContext).Subscription.Id
-
-Write-Output "Azure Subscription: $subscriptionId"
-
-# ------------------------------------------------------------------------------
-# Find Automation Account
-# ------------------------------------------------------------------------------
-
-$automationAccounts = @(
-    Get-AzAutomationAccount `
-        -ResourceGroupName $RESOURCE_GROUP `
-        -ErrorAction Stop
-)
-
-if ($automationAccounts.Count -eq 0) {
-    throw "No Automation Account found in resource group '$RESOURCE_GROUP'."
+$targets = @($essentials.alertTargetIDs)
+if ($targets.Count -ne 1 -or [string]::IsNullOrWhiteSpace([string]$targets[0])) {
+    throw 'Expected exactly one alertTargetIDs entry; no resource was selected.'
 }
+$targetResourceId = [string]$targets[0]
+if ($targetResourceId -notmatch '^/subscriptions/([0-9a-f-]{36})/resourceGroups/([^/]+)/providers/Microsoft\.Web/serverfarms/([^/]+)$') {
+    throw 'Alert target must be an App Service Plan resource ID.'
+}
+$targetSubscriptionId = $Matches[1]
 
-$AutomationAccountName = $automationAccounts[0].AutomationAccountName
-
-Write-Output "Automation Account: $AutomationAccountName"
-
-# ------------------------------------------------------------------------------
-# Invoke Shared Engine
-# ------------------------------------------------------------------------------
-
-Write-Output ""
-Write-Output "============================================================"
-Write-Output "INVOKING SHARED ENGINE"
-Write-Output "============================================================"
-
-Write-Output "Runbook      : $SHARED_ENGINE_RUNBOOK"
-Write-Output "Mode         : scaleup"
-Write-Output "Target ID    : $TargetResourceId"
-Write-Output "Dry Run      : $Default_Runbook_Dry_Run"
-
+Disable-AzContextAutosave -Scope Process | Out-Null
+$context = (Connect-AzAccount -Identity).Context
+if ([string]::IsNullOrWhiteSpace($AutomationSubscriptionId)) {
+    $AutomationSubscriptionId = $targetSubscriptionId
+}
+$context = Set-AzContext -SubscriptionId $AutomationSubscriptionId -DefaultProfile $context
+$jobArguments = @{
+    ResourceGroupName     = $AutomationResourceGroup
+    AutomationAccountName = $AutomationAccountName
+    DefaultProfile        = $context
+}
+# Use the explicitly configured Automation Account, never the first search result.
 $parameters = @{
-    Mode                    = 'scaleup'
-    TargetResourceId       = $TargetResourceId
-    TargetSku              = "P1v3"
-    DryRun = $Default_Runbook_Dry_Run
+    Mode                     = $mode
+    TargetResourceId         = $targetResourceId
+    TargetSku                = $targetSku
+    CompletionTimeoutSeconds = 1200
 }
+$job = Start-AzAutomationRunbook @jobArguments -RunbookName $SharedEngineRunbookName -Parameters $parameters
+if ($null -eq $job.JobId) { throw 'Azure did not return a child job ID.' }
+Write-Verbose "Shared engine job: $($job.JobId)"
 
-$engineJob = Start-AzAutomationRunbook `
-    -ResourceGroupName $RESOURCE_GROUP `
-    -AutomationAccountName $AutomationAccountName `
-    -RunbookName $SHARED_ENGINE_RUNBOOK `
-    -Parameters $parameters `
-    -ErrorAction Stop
+$deadline = [DateTime]::UtcNow.AddSeconds($JobTimeoutSeconds)
+do {
+    $status = Get-AzAutomationJob @jobArguments -Id $job.JobId
+    if ($status.Status -eq 'Completed') { break }
+    if ($status.Status -in @('Failed', 'Stopped', 'Suspended', 'Disconnected', 'Blocked')) {
+        throw "Shared engine job $($job.JobId) ended in state $($status.Status). Inspect its error stream."
+    }
+    if ([DateTime]::UtcNow -ge $deadline) {
+        # A parent timeout does not cancel the child or roll back an ARM update.
+        throw "Timed out waiting for shared engine job $($job.JobId). It may still be running; inspect it before retrying."
+    }
+    Start-Sleep -Seconds 15
+} while ($true)
 
-# ------------------------------------------------------------------------------
-# Result
-# ------------------------------------------------------------------------------
+# Output records may appear shortly after Completed. Fetch the full record value;
+# the Summary field can be truncated and must not be used to parse JSON.
+$result = $null
+$outputDeadline = [DateTime]::UtcNow.AddSeconds(90)
+do {
+    $records = @(Get-AzAutomationJobOutput @jobArguments -Id $job.JobId -Stream Output)
+    foreach ($record in $records) {
+        $fullRecord = Get-AzAutomationJobOutputRecord @jobArguments -JobId $job.JobId -Id $record.StreamRecordId
+        try { $candidate = ([string]$fullRecord.Value) | ConvertFrom-Json -ErrorAction Stop }
+        catch { continue }
+        if ($candidate.SchemaVersion -eq 1 -and
+            $candidate.TargetResourceId -eq $targetResourceId -and
+            $candidate.Mode -eq $mode -and $candidate.TargetSku -eq $targetSku) {
+            $result = $candidate
+        }
+    }
+    if ($null -ne $result) { break }
+    Start-Sleep -Seconds 10
+} while ([DateTime]::UtcNow -lt $outputDeadline)
 
-Write-Output ""
-Write-Output "============================================================"
-Write-Output "SHARED ENGINE STARTED"
-Write-Output "============================================================"
-
-Write-Output "Shared Engine Job ID: $($engineJob.JobId)"
-Write-Output "Target Resource ID passed to engine:"
-Write-Output $TargetResourceId
-
-Write-Output ""
-Write-Output "Scale-Up Master completed successfully."
-
+if ($null -eq $result) {
+    throw "Job $($job.JobId) completed without a readable scaling result; outcome is unverified."
+}
+if ($result.Succeeded -ne $true -or $result.Result -eq 'Failed') {
+    throw "Shared engine job $($job.JobId) reported failure: $($result.Message)"
+}
+$knownResults = @('Changed', 'NoOp', 'NotEnrolled', 'Busy', 'PolicySkipped', 'MetricsSkipped', 'ConcurrentChange')
+if ($result.Result -notin $knownResults) { throw "Unexpected engine result: $($result.Result)" }
+# Preserve the engine's verified outcome. Completed does not necessarily mean Changed.
+$result | Add-Member -NotePropertyName EngineJobId -NotePropertyValue ([string]$job.JobId) -Force
+$result | ConvertTo-Json -Depth 5 -Compress
