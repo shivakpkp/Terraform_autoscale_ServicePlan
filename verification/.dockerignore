@@ -1,0 +1,6 @@
+*
+!requirements.txt
+!conftest.py
+!test_deployment.py
+!expected.json
+!Dockerfile

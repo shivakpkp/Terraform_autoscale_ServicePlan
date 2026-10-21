@@ -1,0 +1,45 @@
+name: Verify Azure deployment
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    environment: POC
+    timeout-minutes: 15
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+
+      - name: Build verification image
+        run: docker build -t azure-verification ./verification
+
+      - name: Run Python verification
+        env:
+          AZURE_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
+          AZURE_CLIENT_SECRET: ${{ secrets.ARM_CLIENT_SECRET }}
+          AZURE_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
+          AZURE_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
+        run: |
+          mkdir -p "$GITHUB_WORKSPACE/verification-results"
+          docker run --rm \
+            --user "$(id -u):$(id -g)" \
+            -e AZURE_CLIENT_ID \
+            -e AZURE_CLIENT_SECRET \
+            -e AZURE_TENANT_ID \
+            -e AZURE_SUBSCRIPTION_ID \
+            --mount "type=bind,source=$GITHUB_WORKSPACE/verification-results,target=/results" \
+            azure-verification
+
+      - name: Upload verification report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: azure-verification-results
+          path: verification-results/results.xml
+          if-no-files-found: warn
+          retention-days: 7
