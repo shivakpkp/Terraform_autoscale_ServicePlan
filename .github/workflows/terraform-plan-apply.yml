@@ -17,6 +17,10 @@ on:
       - 'modules/**'
       - 'Scripts/**'
 
+concurrency:
+  group: terraform-plan-apply
+  cancel-in-progress: true
+  
 permissions:
   contents: read  
 env:
